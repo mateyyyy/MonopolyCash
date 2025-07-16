@@ -6,7 +6,7 @@ import Game from "./pages/Game";
 function App() {
   return (
     <Routes>
-      <Route path="/game" element={<Game />} />
+      <Route path="/" element={<Game />} />
       <Route path="/config" element={<Config />} />
     </Routes>
   );

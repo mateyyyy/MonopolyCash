@@ -34,10 +34,10 @@ export default function Config() {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
         if (data.status == "success") {
-          console.log("entra aca");
-          navigate("/game");
+          const configuration = { passGoBonus, startMoney, players };
+          localStorage.setItem("config", JSON.stringify(configuration));
+          navigate("/");
         }
       })
       .catch((error) => {
@@ -136,7 +136,7 @@ export default function Config() {
               name="startMoney"
               sx={styleInput}
               value={startMoney}
-              onChange={(e) => setStartMoney(e.target.value)}
+              onChange={(e) => setStartMoney(Number(e.target.value))}
             />
             <TextField
               label="Dinero por vuelta"
@@ -146,7 +146,7 @@ export default function Config() {
               name="startMoney"
               sx={styleInput}
               value={passGoBonus}
-              onChange={(e) => setPassGoBonus(e.target.value)}
+              onChange={(e) => setPassGoBonus(Number(e.target.value))}
             />
           </Box>
         </Grid>
@@ -270,7 +270,6 @@ export default function Config() {
                     <DeleteIcon />
                   </IconButton>
                 </Box>
-                <Divider sx={{ backgroundColor: "white" }}></Divider>
               </>
             );
           })}

@@ -5,6 +5,7 @@ import {
   TextField,
   Button,
   IconButton,
+  Grid,
 } from "@mui/material";
 import React, { useState } from "react";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
@@ -21,13 +22,12 @@ export default function TransferirModal({ open, onClose, players, player }) {
     top: "50%",
     left: "50%",
     transform: "translate(-50%, -50%)",
-    width: "100%",
-    maxWidth: 400,
-    mx: 2,
+    width: { xs: "80%", sm: "100%" },
+    maxWidth: { xs: "none", sm: 400 },
     bgcolor: "#121212",
     borderRadius: "8px",
     boxShadow: 24,
-    p: 4,
+    p: 1.5,
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
@@ -49,10 +49,10 @@ export default function TransferirModal({ open, onClose, players, player }) {
         return response.json();
       })
       .then((data) => {
-        console.log(data);
         if (data.status == "success") {
-          console.log("Transferencia hecha");
           onClose();
+          setEtapa(1);
+          setAmount();
         }
         if (data.status == "error") {
           alert(data.message);
@@ -143,11 +143,9 @@ export default function TransferirModal({ open, onClose, players, player }) {
               type="number"
               variant="outlined"
               placeholder="Ingrese el monto"
-              sx={{ mb: 3 }}
+              sx={{ mb: 2 }}
               value={amount}
-              onChange={(e) => {
-                setAmount(e.target.value);
-              }}
+              onChange={(e) => setAmount(e.target.value)}
               InputProps={{
                 sx: {
                   color: "white",
@@ -157,7 +155,79 @@ export default function TransferirModal({ open, onClose, players, player }) {
                 },
               }}
             />
-            <Button onClick={transfer}>Enviar</Button>
+
+            <Grid container spacing={1} justifyContent="center" sx={{ mb: 3 }}>
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, "borrar", 0, "←"].map(
+                (key, index) => (
+                  <Grid size={4} key={index}>
+                    {key === "borrar" ? (
+                      <Button
+                        variant="outlined"
+                        fullWidth
+                        sx={{
+                          color: "white",
+                          borderColor: "#666",
+                          minHeight: "56px",
+                        }}
+                        onClick={() => setAmount("")}
+                      >
+                        Borrar
+                      </Button>
+                    ) : key === "←" ? (
+                      <Button
+                        variant="outlined"
+                        fullWidth
+                        sx={{
+                          color: "white",
+                          borderColor: "#666",
+                          minHeight: "56px",
+                        }}
+                        onClick={() =>
+                          setAmount((prev) => (prev ? prev.slice(0, -1) : ""))
+                        }
+                      >
+                        ←
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="contained"
+                        fullWidth
+                        sx={{
+                          bgcolor: "#333",
+                          color: "white",
+                          fontSize: "1.2rem",
+                          minHeight: "56px",
+                        }}
+                        onClick={() =>
+                          setAmount((prev) => (prev ? prev + key : String(key)))
+                        }
+                      >
+                        {key}
+                      </Button>
+                    )}
+                  </Grid>
+                )
+              )}
+            </Grid>
+            <Button
+              onClick={transfer}
+              variant="contained"
+              fullWidth
+              sx={{
+                mt: 2,
+                bgcolor: "#4caf50",
+                color: "#fff",
+                fontWeight: "bold",
+                fontSize: "1.1rem",
+                borderRadius: "8px",
+                textTransform: "none",
+                "&:hover": {
+                  bgcolor: "#43a047",
+                },
+              }}
+            >
+              Enviar
+            </Button>
           </>
         )}
       </Box>

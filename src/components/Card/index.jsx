@@ -1,5 +1,6 @@
 // components/Card.jsx
 import { Box, Typography } from "@mui/material";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 
 export default function Card({ player, selectPlayer }) {
   return (
@@ -22,11 +23,17 @@ export default function Card({ player, selectPlayer }) {
         },
         transition: "all 0.2s ease",
         display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
         flexDirection: { xs: "column", sm: "row" },
       }}
       onClick={selectPlayer ? () => selectPlayer(player) : undefined}
     >
-      {player.name}
+      {player.name == "Banco" ? (
+        <AccountBalanceIcon sx={{ fontSize: 60 }} />
+      ) : (
+        player.name
+      )}
     </Box>
   );
 }

@@ -32,6 +32,8 @@ export default function LeaveModal({ open, onClose }) {
         if (data.status === "success") {
           localStorage.removeItem("player");
           localStorage.removeItem("players");
+          localStorage.removeItem("config");
+
           window.location.reload();
         }
       })

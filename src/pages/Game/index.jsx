@@ -4,16 +4,36 @@ import Card from "../../components/Card";
 import { Box, Typography, Button } from "@mui/material";
 import { darken } from "@mui/material/styles";
 import TransferirModal from "../../components/TransferirModal";
+import CobrarModal from "../../components/CobrarModal";
 import { Fab } from "@mui/material";
 import LogoutIcon from "@mui/icons-material/Logout";
+import TransferenciasHistorial from "../../components/TransferenciasHistorial";
 import LeaveModal from "../../components/LeaveModal";
+import { useRef } from "react";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
+import ReqModal from "../../components/ReqModal";
+
 export default function Game() {
   const [config, setConfig] = useState({});
+  const [requests, setRequests] = useState([]);
   const [etapa, setEtapa] = useState(1);
   const [player, setPlayer] = useState();
+  const moneyRef = useRef(null);
   const [players, setPlayers] = useState([]);
   const [openTransfer, setOpenTransfer] = useState(false);
+  const [openCobrar, setOpenCobrar] = useState(false);
   const [openLeave, setOpenLeave] = useState(false);
+  const [openNotif, setOpenNotif] = useState(false);
+  const [openReqModal, setOpenReqModal] = useState(false);
+
+  const handleCloseNotif = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setOpenNotif(false);
+  };
 
   const selectPlayer = (player) => {
     fetch(`${ApiUrl}/config/pick`, {
@@ -29,7 +49,6 @@ export default function Game() {
         return response.json();
       })
       .then((data) => {
-        console.log(data);
         if (data.status == "success") {
           localStorage.setItem("player", JSON.stringify(player));
           setPlayer(player);
@@ -45,6 +64,24 @@ export default function Game() {
       });
   };
 
+  const getRequests = () => {
+    fetch(`${ApiUrl}/requests/${player.name}`, { method: "GET" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status === "success") {
+          console.log(data);
+          // Suponiendo que data.requests contiene los cobros pendientes
+          setRequests(data.requests); // Asegurate de tener un estado setRequests
+          if (data.requests.length > 0) {
+            setOpenReqModal(true);
+          }
+        }
+      })
+      .catch((err) => {
+        console.error("Error al obtener solicitudes:", err);
+      });
+  };
+
   const getConfig = () => {
     fetch(`${ApiUrl}/config`, {
       method: "GET",
@@ -54,8 +91,8 @@ export default function Game() {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
         setConfig(data);
+        localStorage.setItem("config", JSON.stringify(data));
         localStorage.setItem("players", JSON.stringify(data.players));
         setPlayers(data.players);
       });
@@ -66,6 +103,7 @@ export default function Game() {
       if (tempData !== null) {
         setEtapa(2);
         setPlayer(JSON.parse(tempData));
+        setConfig(JSON.parse(localStorage.getItem("config")));
         setPlayers(JSON.parse(localStorage.getItem("players")));
         return;
       }
@@ -80,23 +118,29 @@ export default function Game() {
   useEffect(() => {
     if (etapa === 2) {
       const interval = setInterval(() => {
+        getRequests();
         fetch(`${ApiUrl}/player/${player.name}`)
           .then((res) => res.json())
           .then((data) => {
             if (data.status === "success") {
+              const nuevoDinero = data.player.money;
+
+              if (
+                moneyRef.current !== null &&
+                moneyRef.current !== nuevoDinero
+              ) {
+                setOpenNotif(true);
+              }
+
+              moneyRef.current = nuevoDinero;
               setPlayer(data.player);
             }
-            console.log(data);
           });
       }, 1000); // cada 2 segundos
 
       return () => clearInterval(interval);
     }
   }, [etapa]);
-
-  useEffect(() => {
-    console.log(config);
-  }, [config]);
   return (
     <>
       {etapa == 1 ? (
@@ -190,6 +234,20 @@ export default function Game() {
           >
             Transferir
           </Button>
+          <Button
+            variant="contained"
+            sx={{
+              backgroundColor: "#038a0a",
+              color: "white",
+              fontWeight: "bold",
+              "&:hover": {
+                backgroundColor: darken("#038a0a", 0.2),
+              },
+            }}
+            onClick={() => setOpenCobrar(true)}
+          >
+            Cobrar
+          </Button>
           <Fab
             aria-label="leave"
             sx={{
@@ -208,6 +266,12 @@ export default function Game() {
           </Fab>
         </Box>
       )}
+
+      {etapa == 2 ? (
+        <>
+          <TransferenciasHistorial></TransferenciasHistorial>
+        </>
+      ) : null}
       <TransferirModal
         open={openTransfer}
         onClose={() => setOpenTransfer(false)}
@@ -215,7 +279,37 @@ export default function Game() {
         player={player}
       ></TransferirModal>
 
+      <CobrarModal
+        config={config}
+        open={openCobrar}
+        player={player}
+        onClose={() => {
+          setOpenCobrar(false);
+        }}
+      ></CobrarModal>
+
+      <Snackbar
+        open={openNotif}
+        autoHideDuration={2000}
+        onClose={handleCloseNotif}
+      >
+        <Alert
+          onClose={handleCloseNotif}
+          severity="success"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          Ahora tienes ${moneyRef.current}
+        </Alert>
+      </Snackbar>
+
       <LeaveModal open={openLeave} onClose={() => setOpenLeave(false)} />
+      <ReqModal
+        open={openReqModal}
+        onClose={() => setOpenReqModal(false)}
+        requests={requests}
+        player={player}
+      ></ReqModal>
     </>
   );
 }
