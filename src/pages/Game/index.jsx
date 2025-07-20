@@ -13,6 +13,7 @@ import { useRef } from "react";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import ReqModal from "../../components/ReqModal";
+import BancarrotaModal from "../../components/BancarrotaModal";
 
 export default function Game() {
   const [config, setConfig] = useState({});
@@ -25,6 +26,7 @@ export default function Game() {
   const [openCobrar, setOpenCobrar] = useState(false);
   const [openLeave, setOpenLeave] = useState(false);
   const [openNotif, setOpenNotif] = useState(false);
+  const [openBancarrota, setOpenBancarrota] = useState(false);
   const [openReqModal, setOpenReqModal] = useState(false);
 
   const handleCloseNotif = (event, reason) => {
@@ -264,6 +266,22 @@ export default function Game() {
           >
             <LogoutIcon />
           </Fab>
+          <Fab
+            variant="extended"
+            color="error"
+            aria-label="bancarrota"
+            sx={{
+              position: "fixed",
+              bottom: 16,
+              right: 16,
+              color: "white",
+              fontWeight: "bold",
+              textTransform: "none",
+            }}
+            onClick={() => setOpenBancarrota(true)}
+          >
+            Declarar bancarrota
+          </Fab>
         </Box>
       )}
 
@@ -304,6 +322,12 @@ export default function Game() {
       </Snackbar>
 
       <LeaveModal open={openLeave} onClose={() => setOpenLeave(false)} />
+      <BancarrotaModal
+        open={openBancarrota}
+        onClose={() => setOpenBancarrota(false)}
+        player={player}
+      />
+
       <ReqModal
         open={openReqModal}
         onClose={() => setOpenReqModal(false)}
